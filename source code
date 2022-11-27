@@ -1,0 +1,218 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int i;
+int j;
+
+struct Mahasiswa{
+    string nama;
+    string prodi;
+    char grade[9];
+    int id;
+    int NIU;
+    int nilai[9];
+    //nilai = {FD, KD, KAL, BINDO, PRG, PRAK PRG, LOGIF, ALF, AGAMA}
+    // int sks[] = {3, 3, 3, 2, 3, 2, 2, 2, 2};
+    double IPK;
+};
+
+int getOption();
+void cekDatabase(fstream &myFile);
+int getDataSize(fstream &myFile);
+void inputData(fstream &myFile);
+void writeData(fstream &myFile, int posisi, Mahasiswa &inputMahasiswa);
+Mahasiswa readData(fstream &myFile, int posisi);
+void tampilkanDataMahasiswa(fstream &myFile);
+void tampilkanRapot();
+void cariData();
+void updateData(fstream &myFile);
+void deleteData(fstream &myFile);
+void deleteAll(fstream &myFile);
+
+
+int main(){
+    fstream myFile;
+    cekDatabase(myFile);
+    int opsi = getOption();
+    char is_continue;
+    // Mahasiswa mahasiswa[10];
+    // readData(myFile, mahasiswa);
+    // tampilkanDataMahasiswa(mahasiswa);
+	
+    switch (opsi){
+        case 1:
+            cout << "Input mahasiswa" << endl;
+            inputData(myFile);
+
+
+            break;
+        case 2:
+            cout << "Tampilkan rangking" << endl;
+            tampilkanDataMahasiswa(myFile);
+            
+            break;
+        case 3:
+            cout << "Tampilkan rapot" << endl;
+
+            
+            break;
+        case 4:
+            cout << "Cari data" << endl;
+
+            
+            break;
+        case 5:
+            cout << "Ubah data" << endl;
+
+            
+            break;
+        case 6:
+            int hapusPilih;
+            cout << "Hapus data" << endl;
+            cout << "1.Hapus satu" << endl;
+            cout << "2.Reset" << endl;
+            cin >> hapusPilih;
+            if(hapusPilih==2){
+                deleteAll(myFile);
+            } else{
+                // deleteData(myFile);
+            }
+            break;
+        default:
+            cout << "Perintah tidak dikenali" << endl;
+    }
+    
+    myFile.close();
+    cout << "Akhir Program" << endl;
+    cin.get();
+    return 0;
+}
+
+int getOption(){
+    int opsi;
+    system("cls");
+    cout << "Welcome" << endl << endl;
+
+    cout << "Pilih program" << endl;
+    cout << "1.Input mahasiswa" << endl;
+    cout << "2.Tampilkan rangking" << endl;
+    cout << "3.Tampilkan rapot" << endl;
+    cout << "4.Cari data" << endl;
+    cout << "5.Ubah data" << endl;
+    cout << "6.Hapus data" << endl;
+    cout << "Pilih [1-6]: ";
+    cin >> opsi;
+    cout << endl;
+    cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    return opsi;
+}
+
+void cekDatabase(fstream &myFile){
+    myFile.open("data.bin", ios::out | ios::in | ios::binary);
+    if(!myFile.is_open()){
+        cout << "Buat db baru" << endl;
+        myFile.close();
+        myFile.open("data.bin", ios::trunc | ios::out | ios::in | ios::binary);
+    } else{
+        cout << "db ditemukan" << endl;
+    }
+}
+
+Mahasiswa readData(fstream &myFile, int posisi){
+    Mahasiswa readMahasiswa;
+    myFile.seekg((posisi-1)*sizeof(Mahasiswa),ios::beg);
+    myFile.read(reinterpret_cast<char*>(&readMahasiswa), sizeof(Mahasiswa));
+    return readMahasiswa;
+}
+int getDataSize(fstream &myFile){
+    int start, end;
+    myFile.seekg(0, ios::beg);
+    start = myFile.tellg();
+    myFile.seekg(0, ios::end);
+    end = myFile.tellg();
+    return (end-start)/sizeof(Mahasiswa);
+}
+
+void tampilkanDataMahasiswa(fstream &myFile){
+    //nama, niu, prodi, ipk
+    int size = getDataSize(myFile);
+    Mahasiswa showMahasiswa;
+    for(i=1;i<=size;i++){
+        showMahasiswa = readData(myFile, i);
+        cout << i << "\t";
+        cout << "Nama:" << showMahasiswa.nama << "\t";
+        cout << "Prodi:" << showMahasiswa.prodi << "\t";
+        cout << "NIU:" << showMahasiswa.NIU << endl;
+        // cout << "IPK:" << mahasiswa[i].IPK << endl;
+    }
+}
+
+void inputData(fstream &myFile){
+    int n;
+    cout << "Tentukan jumlah mahasiswa ";
+    cin >> n;
+    Mahasiswa inputMahasiswa, lastMahasiswa;
+    int size = getDataSize(myFile);
+    cout << "ukuran data : " << size << endl;
+    if(size==0){
+        inputMahasiswa.id = 1;
+    } else{
+        lastMahasiswa = readData(myFile, size);
+        inputMahasiswa.id = lastMahasiswa.id + 1;
+    }
+    // for(i=0;i<n;i++){
+        cout << "Input nama mahasiswa" << endl;
+        getline(cin, inputMahasiswa.nama);
+        // cin.ignore();
+        // cin >> inputMahasiswa.nama;
+        cout << inputMahasiswa.nama << endl;
+        cout << "Input NIU mahasiswa" << endl;
+        cin >> inputMahasiswa.NIU;
+        cout << "Input prodi mahasiswa" << endl;
+        getline(cin, inputMahasiswa.prodi);
+        // cin.ignore();
+        // cin >> inputMahasiswa.prodi;
+        cout << inputMahasiswa.prodi << endl;
+        //nilai = {FD, KD, KAL, BINDO, PRG, PRAK PRG, LOGIF, ALF, AGAMA}
+        cout << "Input nilai FD: ";
+        cin >> inputMahasiswa.nilai[0];
+        cout << "Input nilai KD: ";
+        cin >> inputMahasiswa.nilai[1]; 
+        cout << "Input nilai KAL: ";
+        cin >> inputMahasiswa.nilai[2]; 
+        cout << "Input nilai BINDO: ";
+        cin >> inputMahasiswa.nilai[3]; 
+        cout << "Input nilai PRG: ";
+        cin >> inputMahasiswa.nilai[4]; 
+        cout << "Input nilai PRAK PRG: ";
+        cin >> inputMahasiswa.nilai[5]; 
+        cout << "Input nilai LOGIF: ";
+        cin >> inputMahasiswa.nilai[6]; 
+        cout << "Input nilai ALF: ";
+        cin >> inputMahasiswa.nilai[7]; 
+        cout << "Input nilai AGAMA: ";
+        cin >> inputMahasiswa.nilai[8];
+        // for(j=0;j<9;j++){
+        //     if(inputMahasiswa.nilai[j]>80){
+                
+        //     }
+        // }
+        writeData(myFile, size+1, inputMahasiswa);
+    // }
+    myFile.close();
+    cout << "Data berhasil diinput" << endl;
+}
+
+void writeData(fstream &myFile, int posisi, Mahasiswa &inputMahasiswa){
+    myFile.seekp((posisi-1)*sizeof(Mahasiswa), ios::beg);
+    myFile.write(reinterpret_cast<char*>(&inputMahasiswa), sizeof(Mahasiswa));
+}
+
+void deleteAll(fstream &myFile){
+    myFile.close();
+    myFile.open("data.bin", ios::trunc | ios::in | ios::out | ios::binary);
+}
